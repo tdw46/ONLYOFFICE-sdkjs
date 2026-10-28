@@ -9138,8 +9138,12 @@ function BinaryPPTYLoader()
                 case 17:
                 {
                     var _size = s.GetLong() / 100;
-                    _size = ((_size * 2) + 0.5) >> 0;
-                    _size /= 2;
+                    // PDF text retains the original hundredth-point precision.
+                    // Keep the existing half-point normalization for office files.
+                    if (!Asc.editor || !Asc.editor.isPdfEditor || !Asc.editor.isPdfEditor()) {
+                        _size = ((_size * 2) + 0.5) >> 0;
+                        _size /= 2;
+                    }
                     rPr.FontSize = _size;
                     rPr.FontSizeCS = _size;
                     break;

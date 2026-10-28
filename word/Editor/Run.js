@@ -7761,7 +7761,12 @@ ParaRun.prototype.Apply_TextPr = function(TextPr, IncFontSize, ApplyToAll)
 		if (!fontName || !fontName.startsWith(prefix) || run.GetFormPDF())
 			return;
 
-		if (!!run.Pr.Bold !== !!newTextPr.Bold || !!run.Pr.Italic !== !!newTextPr.Italic || (newTextPr.GetFontFamily() && fontName != newTextPr.GetFontFamily()))
+		// Text properties are a partial update. Omitted style flags must not
+		// turn a size/color-only change into an embedded-font substitution.
+		let newFontName = newTextPr.GetFontFamily();
+		if ((undefined !== newTextPr.Bold && !!run.Pr.Bold !== !!newTextPr.Bold)
+			|| (undefined !== newTextPr.Italic && !!run.Pr.Italic !== !!newTextPr.Italic)
+			|| (newFontName && fontName !== newFontName))
 		{
 			for (let i = 0; i < run.Content.length; i++)
 			{
@@ -7777,7 +7782,7 @@ ParaRun.prototype.Apply_TextPr = function(TextPr, IncFontSize, ApplyToAll)
 				return;
 			}
 
-			let subFontName = Asc.editor.embeddedFontsMap[fontName];
+			let subFontName = newFontName && newFontName !== fontName ? newFontName : Asc.editor.embeddedFontsMap[fontName];
 			newTextPr.RFonts.SetAll(subFontName);
 			newTextPr.SetSpacing(0);
 			
